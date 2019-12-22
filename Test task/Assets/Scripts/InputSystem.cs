@@ -13,7 +13,9 @@ public class InputSystem : MonoBehaviour
     [SerializeField] Action[] events = new Action[EventCount];
 
     public delegate void PressEvent(KeyCode code);
-    public event PressEvent keyPressed;
+    //событие обрабатывающее нажатие на все клавиши и посылающее подписчикам уведомление о том, какая клавиша была нажата
+    //Это для меню настроек, чтобы нажав на Input field меню настроек просто ждало какую клавишу нажмут и с полученной информацией заполняла поле и вызывала SetAction
+    public event PressEvent anyKeyPressed;
     //интерфейс для подписки/ отписки
     public Action EscEvent { get => events[0]; set => events[0] = value; }
     public Action SpaceEvent { get => events[1]; set => events[1] = value; }
@@ -35,10 +37,11 @@ public class InputSystem : MonoBehaviour
         for (int i = 0; i < EventCount; i++)
             if (Input.GetKeyDown(keyCodes[i]))
                 events[i]?.Invoke();
-        if (keyPressed != null) 
+        if (anyKeyPressed != null) 
         {
             for (KeyCode code = (KeyCode)0; code < KeyCode.End; code++)
-                keyPressed(code);
+                if (Input.GetKeyDown(code))
+                    anyKeyPressed(code);
             Debug.Log("Catch all input");
         }
     }
@@ -48,13 +51,14 @@ public class InputSystem : MonoBehaviour
             if (action == events[i])
             {
                 keyCodes[i] = code;
+                break;
             }
     }
     //тестирование
     private void A()
     {
         Debug.Log("Esc");
-        keyPressed -= D;
+        anyKeyPressed -= D;
     }
     private void B()
     {
@@ -64,7 +68,7 @@ public class InputSystem : MonoBehaviour
     private void C()
     {
         Debug.Log("Enter");
-        keyPressed += D;
+        anyKeyPressed += D;
     }
     private void D(KeyCode code)
     {
